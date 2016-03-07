@@ -1,5 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+error_reporting(E_ALL ^ E_DEPRECATED);
+require 'GameScoreManager.php';
 
 class Welcome extends CI_Controller {
 
@@ -20,6 +22,13 @@ class Welcome extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->view('welcome_message');
+		//$this->load->view('welcome_message');
+	$date = $_GET['date'];
+
+	$manager = new GameScoreManager();
+	echo $manager->getGameScore($date);
 	}
+	public function getName() {
+			echo "name";
+		}	
 }
