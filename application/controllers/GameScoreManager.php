@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL ^ E_DEPRECATED);
+error_reporting(0);
 /**
 * 
 */
@@ -7,14 +7,16 @@ class GameInformation
 {
 	public $gameId;
 	public $hostTeam;
+	public $hostTeamId;
 	public $guestTeam;
+	public $guestTeamId;
 
-	public $hostScore = 0;
-	public $guestScore = 0;
-	public $hostTeamWin = 0;
+	public $hostScore;
+	public $guestScore;
+	public $hostTeamWin;
 
 	//status = -1:未开始 0:进行中 1:已经结束
-	public $status = 0;
+	public $status = -1;
 	public $statusDesc ;
 
 	public $startTime ;
@@ -36,9 +38,41 @@ class GameScoreManager extends CI_Controller
 	private $link = 'http://g.hupu.com/nba/';
 	private $db_manager;
 
-
+	private $team_array = array('骑士' => array('id' => "1"), 
+								'猛龙' => array('id' => "2"), 	
+								'凯尔特人' => array('id' => "3"), 
+								'热火' => array('id' => "4"), 	
+								'老鹰' => array('id' => "5"), 
+								'黄蜂' => array('id' => "6"), 	
+								'步行者' => array('id' => "7"), 
+								'公牛' => array('id' => "8"), 	
+								'活塞' => array('id' => "9"), 
+								'奇才' => array('id' => "10"), 	
+								'魔术' => array('id' => "11"), 
+								'雄鹿' => array('id' => "12"), 	
+								'尼克斯' => array('id' => "13"), 
+								'篮网' => array('id' => "14"), 	
+								'76人' => array('id' => "15"), 
+								'勇士' => array('id' => "16"), 	
+								'马刺' => array('id' => "17"), 
+								'雷霆' => array('id' => "18"), 	
+								'快船' => array('id' => "19"), 
+								'灰熊' => array('id' => "20"), 	
+								'小牛' => array('id' => "21"), 
+								'开拓者' => array('id' => "22"), 	
+								'火箭' => array('id' => "23"), 
+								'爵士' => array('id' => "24"), 	
+								'国王' => array('id' => "25"), 
+								'掘金' => array('id' => "26"), 	
+								'鹈鹕' => array('id' => "27"), 
+								'森林狼' => array('id' => "28"), 	
+								'太阳' => array('id' => "29"), 
+								'湖人' => array('id' => "30")
+								);
 
 	public function getGameScore($date) {
+
+
 
 		date_default_timezone_set('PRC');
 
@@ -46,6 +80,8 @@ class GameScoreManager extends CI_Controller
 			$date = date('Y-m-d');
 		}
 		$this->load->model('gamescoremodel', 'privateModel');
+		//$this->privateModel->deleteAllRows();
+		//return;
 		$oldGames = $this->privateModel->getDateGames(strtotime($date));
 
 		$code = 101;
@@ -76,7 +112,7 @@ class GameScoreManager extends CI_Controller
 		}
 		
 		$resultArray = array('code' => $code, 'msg' => $msg, 'data' => $result);
-		return json_encode($resultArray);
+		return urldecode(json_encode($resultArray,JSON_UNESCAPED_UNICODE));
 	}
 
 	public function shouldUpdateGames($games) {
@@ -86,6 +122,13 @@ class GameScoreManager extends CI_Controller
 			return true;
 		}
 
+		foreach ($games as $info) {
+			// 如果有部分比赛未结束，那么更新
+			if ($info->status==0) {
+				return true;
+			}
+		}
+
 		$gameTime = $games[0]->gamesDate;
 		date_default_timezone_set('PRC');
 		// 如果比赛不是当前日期举行，则不更新
@@ -93,16 +136,7 @@ class GameScoreManager extends CI_Controller
 			return false;
 		}
 
-		$result = false;
-		foreach ($games as $info) {
-			// 如果有部分比赛未结束，那么更新
-			if ($info->status!=1) {
-				$result = true;
-				break;
-			}
-		}
-
-		return $result;
+		return true;
 	}
 
 	public function createDOM($link) {
@@ -189,12 +223,17 @@ class GameScoreManager extends CI_Controller
 				$secondTeam = $xpath->query("//div[@class='team_vs_a_2 clearfix']//div[@class='txt']/span/a");
 
 				$gameInfo->hostTeam = $firstTeam[0]->nodeValue;
+				$gameInfo->hostTeamId = $this->team_array[$gameInfo->hostTeam]['id'];
 				$gameInfo->guestTeam = $secondTeam[0]->nodeValue;
+				$gameInfo->guestTeamId = $this->team_array[$gameInfo->guestTeam]['id'];
 
 				$status = $xpath->query("//div[@class='team_vs_b']//span[@class='b']");
-				$time = $status[0]->childNodes[0];
+				if (count($status) == 0 || empty($status[0])) {
+					$status = $xpath->query("//div[@class='team_vs_c']//span[@class='b']");
+				}
+				$time = $status[0]->childNodes[1];
 
-				$gameInfo->statusDesc = str_replace(' ', '', $status[0]->nodeValue);
+				$gameInfo->statusDesc = str_replace(' ', '', $status[0]->childNodes[0]->nodeValue);
 				$gameInfo->status = $this->convertGameSatus($gameInfo->statusDesc);
 
 				if ($gameInfo->status != -1) {
@@ -205,13 +244,13 @@ class GameScoreManager extends CI_Controller
 					$gameInfo->hostScore = $firstTeamScore[0]->nodeValue;
 					$gameInfo->guestScore = $secondTeamScore[0]->nodeValue;
 
-					$gameInfo->hostTeamWin = (intval($gameInfo->hostScore)>intval($gameInfo->guestScore))?1:0;
+					$gameInfo->hostTeamWin = (intval($gameInfo->hostScore)>intval($gameInfo->guestScore))?intval(1):intval(0);
 
 					$processTime = preg_replace('# #','',$time->nodeValue);
 					$gameInfo->processTime = $processTime;
 				} else {
-					$startTime = preg_replace('# #','',$time->nodeValue);
-					$gameInfo->startTime = NULL;//$startTime;
+					$startTime = preg_replace('# #','',$time->childNodes[0]->nodeValue);
+					$gameInfo->startTime = $startTime;
 				}
 
 				

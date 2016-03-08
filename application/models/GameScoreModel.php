@@ -1,5 +1,6 @@
 <?php
-error_reporting(E_ALL ^ E_DEPRECATED);
+
+error_reporting(0);
 /**
 * Game Score Model
 */
@@ -47,6 +48,11 @@ class GameScoreModel extends CI_Model
 
 		$this->db->where($where);
 		$query = $this->db->get('gameScore');
+		$result = $query->result();
+		foreach ($result as $game) {
+			$game->status = intval($game->status);
+			$game->hostTeamWin = intval($game->hostTeamWin);
+		}
 		return $query->result();
 	}
 
