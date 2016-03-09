@@ -282,6 +282,13 @@ switch (ENVIRONMENT)
 
 	define('VIEWPATH', $view_folder);
 
+	//http://stackoverflow.com/questions/4882790/how-to-set-date-timezone-for-code-igniter-to-work-with-php5-3
+	//http://php.net/manual/en/function.date-default-timezone-set.php
+    if( ! ini_get('date.timezone') )
+    {
+        date_default_timezone_set('Asia/Hong_Kong');
+    } 
+
 /*
  * --------------------------------------------------------------------
  * LOAD THE BOOTSTRAP FILE
