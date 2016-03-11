@@ -17,7 +17,9 @@
  		for ($userCount=10; $userCount < 20; $userCount++) { 
  			$uid = '123456789'.$userCount;
  			$startTime = date_create('2015-10-01 00:00:00');
- 			for ($timeStamp=1; $timeStamp <= 2400; $timeStamp++) { 
+
+		     // 插入一些运动数据
+ 			for ($timeStamp=1; $timeStamp <= 240; $timeStamp++) { 
  				$data = array(
  					'startTime' => date_format($startTime,'Y-m-d H:i:s'),
  					'stepCount' => rand(0, 50000),
@@ -29,6 +31,7 @@
  			echo "insert user:".$uid.' success'."\n";
  		}
  		// echo date_format($date,'Y-m-d H:i:s');
+
  	}
  } 
  ?>
