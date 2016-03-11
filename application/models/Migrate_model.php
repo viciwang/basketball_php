@@ -15,18 +15,18 @@
  	{
  		$this->db->empty_table('StepCounting');
  		for ($userCount=10; $userCount < 20; $userCount++) { 
- 			$userId = '10000000'.$userCount;
- 			$startDate = date_create('2015-10-01 00:00:00');
+ 			$uid = '123456789'.$userCount;
+ 			$startTime = date_create('2015-10-01 00:00:00');
  			for ($timeStamp=1; $timeStamp <= 2400; $timeStamp++) { 
  				$data = array(
- 					'startDate' => date_timestamp_get($startDate),
+ 					'startTime' => date_format($startTime,'Y-m-d H:i:s'),
  					'stepCount' => rand(0, 50000),
- 					'userId' => $userId
+ 					'uid' => $uid
  					);
                 $this->db->insert('StepCounting', $data);
- 				date_add($startDate,date_interval_create_from_date_string("1 hours"));
+ 				date_add($startTime,date_interval_create_from_date_string("1 hours"));
  			}
- 			echo "insert user:".$userId.' success'."\n";
+ 			echo "insert user:".$uid.' success'."\n";
  		}
  		// echo date_format($date,'Y-m-d H:i:s');
  	}

@@ -13,7 +13,7 @@ class StepCountingModel extends CI_Model
 
 	public function getAllStepCounting($userId = '1')
 	{
-		$query = $this->db->query("SELECT * FROM StepCounting where userId = $userId");
+		$query = $this->db->query("SELECT * FROM StepCounting where userId = $uid");
 		return $query->result_array();
 	}
 }
