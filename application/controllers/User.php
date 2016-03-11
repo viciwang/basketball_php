@@ -14,16 +14,13 @@ class User extends CI_Controller
 	public function register() 
 	{
 		$response = $this->userModel->addUser();
-		if($response->code === 0)
-		{
-			echo "插入成功";
-			echo json_encode($response);
-		}
-		else 
-		{
-			echo "插入失败";
-			echo json_encode($response);
-		}
+		echo json_encode($response);
+	}
+
+	public function login() 
+	{
+		$response = $this->userModel->login();
+		echo json_encode($response);
 	}
 }
 ?>
