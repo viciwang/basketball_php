@@ -1,7 +1,7 @@
 <?php 
 
-include 'ResponseModel.php';
-include 'application/vendor/UUID.php';
+require_once 'application/models/ResponseModel.php';
+require_once 'application/vendor/UUID.php';
 /**
 * 
 */
@@ -14,19 +14,77 @@ class UserModel extends CI_Model
 		$this->load->database();
 	}
 
+	public function getUserByToken($token)
+	{
+		return $this->_getUserByType($token,1);
+	}
+
+	public function getUserByUid($uid)
+	{
+		return $this->_getUserByType($uid,2);
+	}
+
+	public function getUserByEmail($email)
+	{
+		return $this->_getUserByType($email,3);
+	}
+
+	// 
+	private function _getUserByType($string , $type = 1)
+	{
+		$queryKey = 'token';
+		switch ($type) {
+			case 1: {
+				$queryKey = 'token';
+				break;
+			}
+
+			case 2: {
+				$queryKey = 'uid';
+				break;
+			}
+
+			case 3: {
+				$queryKey = 'email';
+				break;
+			}
+			default:
+				break;
+		}
+		$queryString = "SELECT * FROM User where $queryKey = \"$string\" ";
+		$query = $this->db->query($queryString);
+		return  $query->row();
+	}
+
 	public function addUser() 
 	{
 		$date = date_create();
 		$token = UUID::v4();
-		$query = $this->db->query("SELECT * FROM User where uid = ".$this->input->post('phone'));
-		$queryResult = $query->result_array();
-		if (empty($queryResult) == false)
+		$queryResult = $this->getUserByEmail($this->input->post('email'));
+		if ($queryResult != NULL)
 		{
-			return new ResponseModel(null,"该号码已被注册",1);
+			return new ResponseModel(null,"该邮箱已被注册",1);
 		}
 
+		$email = $this->input->post('email');
+		$codeRow = $this->db->query("SELECT * FROM VerifyCode WHERE email = \"$email\"")->row();
+		if ($codeRow == NULL || ($codeRow != NULL && $codeRow->code != $this->input->post('verifyCode'))) {
+			return new ResponseModel(null,"验证码错误",1);
+		}
+
+		// 获取编号
+		$uidFile = fopen("application/models/CurrentUid.txt", "r") or die("Unable to open file!");
+        $currentUid = fgets($uidFile);
+        $currentUid = strval(++$currentUid);
+        fclose($uidFile);
+
+        $uidFile = fopen("application/models/CurrentUid.txt", "w") or die("Unable to open file!");
+        fwrite($uidFile, $currentUid);
+        fclose($uidFile);
+
 		$user = array(
-			'uid' => $this->input->post('phone'),
+			'uid' => $currentUid,
+			'email' => $this->input->post('email'),
 			'nickName' => $this->input->post('nickName'),
 			'password' => $this->input->post('password'),
 			'headImageUrl' => $this->input->post('headImageUrl'),
@@ -45,11 +103,10 @@ class UserModel extends CI_Model
 
 	public function login()
 	{
-		$query = $this->db->query("SELECT * FROM User where uid = ".$this->input->post('phone'));
-		$user = $query->row();
+		$user = $this->getUserByEmail($this->input->post('email'));
 
-		if (empty($user)) {
-			return new ResponseModel(null,"手机号码错误",1);
+		if ($user == NULL) {
+			return new ResponseModel(null,"邮箱号码错误",1);
 		}
 		else if (strcmp($user->password, $this->input->post('password')) != 0) {
 			return new ResponseModel(null,"密码错误",1);
@@ -66,7 +123,35 @@ class UserModel extends CI_Model
 		$user->lastLoginTime = $update['lastLoginTime'];
 		$user->token = $token;
 		unset($user->password);
+		unset($user->id);
 		return new ResponseModel($user,"登录成功",0);
+	}
+
+	public function generateVerifyCode($email)
+	{
+		if ($this->getUserByEmail($email) != NULL) {
+			return new ResponseModel(null, '该邮箱已被注册', 1);
+		}
+
+		$codeRow = $this->db->query("SELECT * FROM VerifyCode WHERE email = \"$email\"")->row();
+		$now = date_create();
+		$code = rand(100000,999999);
+		if ($codeRow == NULL) {
+			$this->db->insert('VerifyCode', array(
+				'email' => $email,
+				'timestamp' => date_format($now, 'Y-m-d H:i:s'),
+				'code' => $code 
+				));
+		}
+		else {
+			$update = array(
+				'timestamp' => date_format($now, 'Y-m-d H:i:s'),
+				'code' => $code 
+				);
+			$this->db->update('VerifyCode', $update ,"email = \"$email\" ");
+		}
+		return strval($code);
+
 	}
 }
 ?>
