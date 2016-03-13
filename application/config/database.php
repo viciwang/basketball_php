@@ -73,19 +73,27 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+$current_user = Get_Current_User();
+$database_name = 'sport';
+$database_password = '';
+if (strcmp($current_user, "Allen") == 0) {
+	$database_name = 'basketball';
+	$database_password = 'allenwang';
+}
+
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
 	'username' => 'root',
-	'password' => '',
-	'database' => 'sport',
+	'password' => $database_password,
+	'database' => $database_name,
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
 	'cache_on' => FALSE,
 	'cachedir' => '',
-	'char_set' => 'utf8',
+	'char_set' => 'utf8mb4',
 	'dbcollat' => 'utf8_general_ci',
 	'swap_pre' => '',
 	'encrypt' => FALSE,
