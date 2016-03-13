@@ -31,6 +31,15 @@ class User extends CI_Controller
 		echo json_encode($response);
 	}
 
+	public function uploadHeadImage() 
+	{
+		$file = $_FILES['image'];
+		$fileName = time().'.png';
+		move_uploaded_file($file['tmp_name'], './headImages/'.$fileName);
+		$response = new ResponseModel(array('headImageUrl' => $fileName), '成功',0);
+		echo json_encode($response);
+	}
+
 	public function getVerifyCode()
 	{
 		$result = $this->userModel->generateVerifyCode($this->input->post('email'));
