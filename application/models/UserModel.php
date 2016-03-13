@@ -97,10 +97,10 @@ class UserModel extends CI_Model
 		$user = array(
 			'uid' => $currentUid,
 			'email' => $this->input->post('email'),
-			'nickName' => $this->input->post('nickName'),
+			'nickName' => $email,
 			'password' => $this->input->post('password'),
-			'headImageUrl' => $this->input->post('headImageUrl'),
-			'city' => $this->input->post('city'),
+			'headImageUrl' => 'http://www.qqya.com/qqyaimg/allimg/100529/1_100529165618_29.jpg',
+			'city' => '广州',
 			'token' => $token,
 			'lastLoginTime' => date_format($date,'Y-m-d H:i:s')
 			);
