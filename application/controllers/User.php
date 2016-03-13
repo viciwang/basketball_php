@@ -34,7 +34,22 @@ class User extends CI_Controller
 	public function uploadHeadImage() 
 	{
 		$file = $_FILES['image'];
-		$fileName = time().'.png';
+		if (!(($file['type'] == 'image/jpeg') 
+			||($file['type'] == 'image/jpg')
+			||($file['type'] == 'image/png')
+			)) {
+			echo json_encode(new ResponseModel(null, '文件必须是png、jpeg或jpg格式', 1));
+		    return;
+		}
+		elseif ($file['size'] > 1048576) {
+			echo json_encode(new ResponseModel(null, '图片必须小于1Mb',1));
+			return;
+		}
+		elseif ($file['error']) {
+			echo json_encode(new ResponseModel(null, $file['error'],1));
+			return;
+		}
+		$fileName = time().'.'.substr($file['type'], 6);
 		move_uploaded_file($file['tmp_name'], './headImages/'.$fileName);
 		$response = new ResponseModel(array('headImageUrl' => $fileName), '成功',0);
 		echo json_encode($response);
