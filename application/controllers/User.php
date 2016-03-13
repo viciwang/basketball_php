@@ -51,7 +51,7 @@ class User extends CI_Controller
 		}
 		$fileName = time().'.'.substr($file['type'], 6);
 		move_uploaded_file($file['tmp_name'], './headImages/'.$fileName);
-		$response = new ResponseModel(array('headImageUrl' => $fileName), '成功',0);
+		$response = new ResponseModel(array('headImageUrl' => 'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER["SERVER_PORT"].'/headImages/'.$fileName), '成功',0);
 		echo json_encode($response);
 	}
 
