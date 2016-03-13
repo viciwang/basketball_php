@@ -25,6 +25,12 @@ class User extends CI_Controller
 		echo json_encode($response);
 	}
 
+	public function updateInfo()
+	{
+		$response = $this->userModel->updateUserInfo();
+		echo json_encode($response);
+	}
+
 	public function getVerifyCode()
 	{
 		$result = $this->userModel->generateVerifyCode($this->input->post('email'));
