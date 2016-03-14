@@ -56,6 +56,18 @@ class UserModel extends CI_Model
 		return  $query->row();
 	}
 
+	public function checkToken($uid,$token)
+	{
+		$user = $this->getUserByUid($uid);
+		if ($user == NULL) {
+			return new ResponseModel(null,"没有此用户",1);
+		}
+		elseif ($user->token != $token) {
+			return new ResponseModel(null,"token已过期，请重新登录",99);
+		}
+		return $user;
+	}
+
 	public function addUser() 
 	{
 		$date = date_create();
@@ -85,10 +97,10 @@ class UserModel extends CI_Model
 		$user = array(
 			'uid' => $currentUid,
 			'email' => $this->input->post('email'),
-			'nickName' => $this->input->post('nickName'),
+			'nickName' => $email,
 			'password' => $this->input->post('password'),
-			'headImageUrl' => $this->input->post('headImageUrl'),
-			'city' => $this->input->post('city'),
+			'headImageUrl' => 'http://www.qqya.com/qqyaimg/allimg/100529/1_100529165618_29.jpg',
+			'city' => '广州',
 			'token' => $token,
 			'lastLoginTime' => date_format($date,'Y-m-d H:i:s')
 			);
@@ -152,6 +164,28 @@ class UserModel extends CI_Model
 		}
 		return strval($code);
 
+	}
+
+	public function updateInfo()
+	{
+		$uid = $this->input->post('uid');
+		$checkResult = $this->checkToken($uid,$this->input->post('token'));
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+		$user = $checkResult;
+		$userInfo = array(
+			'nickName' => $this->input->post('nickName'),
+			'headImageUrl' => $this->input->post('headImageUrl'),
+			'city' => $this->input->post('city'),
+			);
+		$this->db->update('User',$userInfo,"uid = \"$uid\"");
+		$user->nickName = $this->input->post('nickName');
+		$user->headImageUrl = $this->input->post('headImageUrl');
+		$user->city = $this->input->post('city');
+		unset($user->id);
+		unset($user->password);
+		return new ResponseModel($user,"更新成功",0);
 	}
 }
 ?>
