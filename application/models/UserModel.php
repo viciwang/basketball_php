@@ -62,7 +62,7 @@ class UserModel extends CI_Model
 		if ($user == NULL) {
 			return new ResponseModel(null,"没有此用户",1);
 		}
-		elseif ($user->token != $token) {
+		elseif (strcmp($user->token, $token) != 0) {
 			return new ResponseModel(null,"token已过期，请重新登录",99);
 		}
 		return $user;
@@ -141,9 +141,9 @@ class UserModel extends CI_Model
 
 	public function generateVerifyCode($email)
 	{
-		if ($this->getUserByEmail($email) != NULL) {
-			return new ResponseModel(null, '该邮箱已被注册', 1);
-		}
+		// if ($this->getUserByEmail($email) != NULL) {
+		// 	return new ResponseModel(null, '该邮箱已被注册', 1);
+		// }
 
 		$codeRow = $this->db->query("SELECT * FROM VerifyCode WHERE email = \"$email\"")->row();
 		$now = date_create();
@@ -168,11 +168,17 @@ class UserModel extends CI_Model
 
 	public function updateInfo()
 	{
-		$uid = $this->input->post('uid');
-		$checkResult = $this->checkToken($uid,$this->input->post('token'));
+		$header = getallheaders();
+		if ($header == NULL) {
+			return ResponseModel(nil,"header中没有带token",1);
+		}
+		$token = $header['token'];
+		$uid = $header['uid'];
+		$checkResult = $this->checkToken($uid,$token);
 		if (get_class($checkResult) === 'ResponseModel') {
 			return $checkResult;
 		}
+
 		$user = $checkResult;
 		$userInfo = array(
 			'nickName' => $this->input->post('nickName'),
