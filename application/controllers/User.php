@@ -27,7 +27,7 @@ class User extends CI_Controller
 
 	public function updateInfo()
 	{
-		$response = $this->userModel->updateUserInfo();
+		$response = $this->userModel->updateInfo();
 		echo json_encode($response);
 	}
 
