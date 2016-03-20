@@ -1,6 +1,6 @@
 <?php
 require_once 'application/models/ResponseModel.php';
-require 'application/vendor/php-readability/lib/Readability.inc.php';
+require 'application/vendor/Readability.inc.php';
 require 'application/vendor/html2text-master/src/Html2Text.php';
 class Article
 {
@@ -27,6 +27,7 @@ class ArticleManager extends CI_Controller
 		$data = $this->privateModel->getArticleSource();
 		echo json_encode(new ResponseModel($data,'',200),JSON_UNESCAPED_UNICODE);
 	}
+
 	function articleParse() {
 		$url = $this->input->get('link');//'http://www.dgtle.com/article-13702-1.html';//'http://36kr.com/p/5043930.html';//
 		$html = file_get_contents($url);
@@ -50,7 +51,6 @@ class ArticleManager extends CI_Controller
 						 'msg' => '',
 						 'data' => $articleObject );
 
-		//echo "$articleObject->content";
 		echo urldecode(json_encode($results,JSON_UNESCAPED_UNICODE));
 	}
 }
