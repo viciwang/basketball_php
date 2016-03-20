@@ -70,11 +70,12 @@ class GameScoreManager extends CI_Controller
 								'湖人' => array('id' => "30")
 								);
 
-	public function getGameScore($date) {
+	public function getGameScore() {
 
-
-
+			
 		date_default_timezone_set('PRC');
+		$this->lastModifyDate = date('Y-m-d H:i:s',time());
+		$date = $this->input->get('date');
 
 		if (empty($date)) {
 			$date = date('Y-m-d');
@@ -84,7 +85,7 @@ class GameScoreManager extends CI_Controller
 		//return;
 		$oldGames = $this->privateModel->getDateGames(strtotime($date));
 
-		$code = 101;
+		$code = 200;
 		$msg = '';
 		$result = array();
 		if ($this->shouldUpdateGames($oldGames)) {
@@ -110,9 +111,8 @@ class GameScoreManager extends CI_Controller
 			$msg = 'not modify !';
 			$result = $oldGames;
 		}
-		
 		$resultArray = array('code' => $code, 'msg' => $msg, 'data' => $result);
-		return urldecode(json_encode($resultArray,JSON_UNESCAPED_UNICODE));
+		echo urldecode(json_encode($resultArray,JSON_UNESCAPED_UNICODE));
 	}
 
 	public function shouldUpdateGames($games) {
