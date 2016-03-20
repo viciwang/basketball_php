@@ -23,11 +23,10 @@ class StepCountingModel extends BB_Model
 	{
 		$checkResult = $this->httpHeaderAuth();
 		if (get_class($checkResult) === 'ResponseModel') {
-			echo json_encode($checkResult);
-			return;
+			return $checkResult;
 		}
 		$uid = $checkResult->uid;
-		$query = $this->db->query("SELECT * FROM StepCountDailyList WHERE uid = $uid");
+		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid");
 		$resultArray = $query->result_array();
 		$total = 0;
 		foreach ($resultArray as $record) {
@@ -35,7 +34,19 @@ class StepCountingModel extends BB_Model
 		}
 		$count = count($resultArray) == 0 ? 1 : count($resultArray);
 		$total = intval($total/$count);
-		echo json_encode(new ResponseModel(array('totalCount'=>$total),'成功',0));
+		return new ResponseModel(array('totalCount'=>$total),'成功',0);
+	}
+
+	public function getHistory()
+	{
+		$checkResult = $this->httpHeaderAuth();
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+		$uid = $checkResult->uid;
+		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
+		$resultArray = $query->result_array();
+		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
 	}
 }
  ?>
