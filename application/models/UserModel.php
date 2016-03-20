@@ -2,70 +2,17 @@
 
 require_once 'application/models/ResponseModel.php';
 require_once 'application/vendor/UUID.php';
+require_once 'application/models/BB_Model.php';
 /**
 * 
 */
-class UserModel extends CI_Model
+class UserModel extends BB_Model
 {
 	
 	function __construct()
 	{
 		parent::__construct();
 		$this->load->database();
-	}
-
-	public function getUserByToken($token)
-	{
-		return $this->_getUserByType($token,1);
-	}
-
-	public function getUserByUid($uid)
-	{
-		return $this->_getUserByType($uid,2);
-	}
-
-	public function getUserByEmail($email)
-	{
-		return $this->_getUserByType($email,3);
-	}
-
-	// 
-	private function _getUserByType($string , $type = 1)
-	{
-		$queryKey = 'token';
-		switch ($type) {
-			case 1: {
-				$queryKey = 'token';
-				break;
-			}
-
-			case 2: {
-				$queryKey = 'uid';
-				break;
-			}
-
-			case 3: {
-				$queryKey = 'email';
-				break;
-			}
-			default:
-				break;
-		}
-		$queryString = "SELECT * FROM User where $queryKey = \"$string\" ";
-		$query = $this->db->query($queryString);
-		return  $query->row();
-	}
-
-	public function checkToken($uid,$token)
-	{
-		$user = $this->getUserByUid($uid);
-		if ($user == NULL) {
-			return new ResponseModel(null,"没有此用户",1);
-		}
-		elseif (strcmp($user->token, $token) != 0) {
-			return new ResponseModel(null,"token已过期，请重新登录",99);
-		}
-		return $user;
 	}
 
 	public function addUser() 

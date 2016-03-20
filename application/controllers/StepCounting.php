@@ -16,5 +16,10 @@ class StepCounting extends CI_Controller
 		$data = $this->stepCountingModel->getAllStepCounting('1000000010');
 		echo json_encode($data);
 	}
+
+	public function average() 
+	{
+		$data = $this->stepCountingModel->getAverage();
+	}
 }
  ?>
