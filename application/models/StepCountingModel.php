@@ -48,5 +48,17 @@ class StepCountingModel extends BB_Model
 		$resultArray = $query->result_array();
 		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
 	}
+
+	public function getRanking()
+	{
+		$checkResult = $this->httpHeaderAuth();
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+		$uid = $checkResult->uid;
+		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
+		$resultArray = $query->result_array();
+		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
+	}
 }
  ?>
