@@ -22,7 +22,7 @@
 		foreach ($users as $user) {
 			echo json_encode($user);
 			$uid = $user['uid'];
- 			$startTime = date_create('2016-10-01 00:00:00');
+ 			$startTime = date_create('2016-02-01 00:00:00');
 
 		     // 插入一些运动数据
  			for ($timeStamp=0; $timeStamp < 100; $timeStamp++) { 
