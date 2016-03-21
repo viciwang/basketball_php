@@ -4,6 +4,11 @@ require_once 'application/models/BB_Model.php';
 /**
 * 
 */
+	function step_count_result_map($val)
+	{
+		return array('stepCount'=> intval($val['stepCount']),'date'=> $val['date']);
+	}
+
 class StepCountingModel extends BB_Model
 {
 	
@@ -46,7 +51,8 @@ class StepCountingModel extends BB_Model
 		$uid = $checkResult->uid;
 		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
 		$resultArray = $query->result_array();
-		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
+		$array = array_map('step_count_result_map', $resultArray);
+		return new ResponseModel(array('steps'=>$array),'成功',0);
 	}
 
 	public function getRanking()
@@ -60,5 +66,7 @@ class StepCountingModel extends BB_Model
 		$resultArray = $query->result_array();
 		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
 	}
+
+
 }
  ?>
