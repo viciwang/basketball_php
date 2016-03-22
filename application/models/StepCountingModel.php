@@ -4,7 +4,7 @@ require_once 'application/models/BB_Model.php';
 /**
 * 
 */
-	function step_count_result_map($val)
+	function get_history_result_map($val)
 	{
 		return array('stepCount'=> intval($val['stepCount']),'date'=> $val['date']);
 	}
@@ -51,8 +51,20 @@ class StepCountingModel extends BB_Model
 		$uid = $checkResult->uid;
 		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
 		$resultArray = $query->result_array();
-		$array = array_map('step_count_result_map', $resultArray);
-		return new ResponseModel(array('steps'=>$array),'成功',0);
+		$mapArray = array_map('get_history_result_map', $resultArray);
+		$retrunArray = array();
+		$temArray = array();
+
+		// 按月份分类
+		for ($index=0; $index < count($mapArray); $index++) { 
+			$currentRecord = $mapArray[$index];
+			array_push($temArray, $currentRecord);
+			if (strcmp(substr($currentRecord['date'], 8),'01') == 0) {
+				array_push($retrunArray, array('month'=>substr($currentRecord['date'], 0, 7),'dayRecords'=>$temArray));
+				$temArray = array();
+			}
+		}
+		return new ResponseModel($retrunArray,'成功',0);
 	}
 
 	public function getRanking()
