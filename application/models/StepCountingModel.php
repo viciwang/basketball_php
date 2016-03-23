@@ -4,9 +4,10 @@ require_once 'application/models/BB_Model.php';
 /**
 * 
 */
-	function get_history_result_map($val)
+	function result_map_string_to_int($val)
 	{
-		return array('stepCount'=> intval($val['stepCount']),'date'=> $val['date']);
+		$val['stepCount'] = intval($val['stepCount']);
+		return $val;
 	}
 
 class StepCountingModel extends BB_Model
@@ -51,7 +52,7 @@ class StepCountingModel extends BB_Model
 		$uid = $checkResult->uid;
 		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
 		$resultArray = $query->result_array();
-		$mapArray = array_map('get_history_result_map', $resultArray);
+		$mapArray = array_map('result_map_string_to_int', $resultArray);
 		$retrunArray = array();
 		$temArray = array();
 
@@ -74,9 +75,9 @@ class StepCountingModel extends BB_Model
 			return $checkResult;
 		}
 		$uid = $checkResult->uid;
-		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
-		$resultArray = $query->result_array();
-		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
+		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName, b.headImageUrl FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
+		$resultArray = array_map('result_map_string_to_int',$query->result_array());
+		return new ResponseModel($resultArray,'成功',0);
 	}
 
 
