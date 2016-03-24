@@ -23,6 +23,7 @@ class ArticleManager extends CI_Controller
 		$this->load->model('ArticleModel');
 	}
 	function articleSource() {
+		echo $_SERVER["REMOTE_ADDR"].'<br>';
 		$this->load->model('ArticleModel','privateModel');
 		$data = $this->privateModel->getArticleSource();
 		echo json_encode(new ResponseModel($data,'',200),JSON_UNESCAPED_UNICODE);

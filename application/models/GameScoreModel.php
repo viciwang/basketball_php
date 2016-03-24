@@ -9,17 +9,6 @@ class GameScoreModel extends CI_Model
 {
 	private $dblink;
 	private $db_select;
-	function __construct(){
-
-		parent::__construct();
-		// $this->dblink = mysql_connect('localhost','root','');
-		
-		// $this->db_select = mysql_select_db("sport",$this->dblink);
-		// if (!$this->db_select) {
-		// 	echo "call game<br>";
-		// 	return nil;
-		// } 
-	}
 
 	public function getGameInformation() {
 
@@ -61,8 +50,11 @@ class GameScoreModel extends CI_Model
 		$oldData = $this->getDateGames($date);
 
 		if (!$oldData || count($oldData)==0) {
-			$this->insertGames($games);
-			return true;
+			if($this->insertGames($games) == false){
+				return false;
+			} else {
+				return true;
+			}
 		}
 		if(count($oldData)!=count($games)) {
 			//echo "not equal! new count = ".count($games)." and old count = ".count($oldData);
@@ -86,7 +78,7 @@ class GameScoreModel extends CI_Model
 	}
 
 	public function insertGames($games) {
-		$this->db->insert_batch('gameScore',$games);
+		return $this->db->insert_batch('gameScore',$games);
 	}
 
 }
