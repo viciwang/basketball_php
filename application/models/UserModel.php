@@ -115,13 +115,7 @@ class UserModel extends BB_Model
 
 	public function updateInfo()
 	{
-		$header = getallheaders();
-		if ($header == NULL) {
-			return ResponseModel(nil,"header中没有带token",1);
-		}
-		$token = $header['token'];
-		$uid = $header['uid'];
-		$checkResult = $this->checkToken($uid,$token);
+		$checkResult = $this->httpHeaderAuth();
 		if (get_class($checkResult) === 'ResponseModel') {
 			return $checkResult;
 		}
@@ -139,6 +133,21 @@ class UserModel extends BB_Model
 		unset($user->id);
 		unset($user->password);
 		return new ResponseModel($user,"更新成功",0);
+	}
+
+	public function logout() 
+	{
+		$checkResult = $this->httpHeaderAuth();
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+
+		$uid = $checkResult->uid;
+		$userInfo = array(
+			'token' => substr(UUID::v4(),0,23)
+			);
+		$this->db->update('User',$userInfo,"uid = \"$uid\"");
+		return new ResponseModel(NULL,"更新成功",0);
 	}
 }
 ?>

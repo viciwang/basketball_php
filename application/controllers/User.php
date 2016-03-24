@@ -73,5 +73,11 @@ class User extends CI_Controller
 		$response = new ResponseModel(array('verifyCode' => $code) , "验证码已发送", 0);
 		echo  json_encode($response);
 	}
+
+	public function logout() 
+	{
+		$response = $this->userModel->logout();
+		echo json_encode($response);
+	}
 }
 ?>
