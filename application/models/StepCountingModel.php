@@ -4,6 +4,12 @@ require_once 'application/models/BB_Model.php';
 /**
 * 
 */
+	function result_map_string_to_int($val)
+	{
+		$val['stepCount'] = intval($val['stepCount']);
+		return $val;
+	}
+
 class StepCountingModel extends BB_Model
 {
 	
@@ -46,7 +52,20 @@ class StepCountingModel extends BB_Model
 		$uid = $checkResult->uid;
 		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
 		$resultArray = $query->result_array();
-		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
+		$mapArray = array_map('result_map_string_to_int', $resultArray);
+		$retrunArray = array();
+		$temArray = array();
+
+		// 按月份分类
+		for ($index=0; $index < count($mapArray); $index++) { 
+			$currentRecord = $mapArray[$index];
+			array_push($temArray, $currentRecord);
+			if (strcmp(substr($currentRecord['date'], 8),'01') == 0) {
+				array_push($retrunArray, array('month'=>substr($currentRecord['date'], 0, 7),'dayRecords'=>$temArray));
+				$temArray = array();
+			}
+		}
+		return new ResponseModel($retrunArray,'成功',0);
 	}
 
 	public function getRanking()
@@ -56,9 +75,11 @@ class StepCountingModel extends BB_Model
 			return $checkResult;
 		}
 		$uid = $checkResult->uid;
-		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
-		$resultArray = $query->result_array();
-		return new ResponseModel(array('steps'=>$resultArray),'成功',0);
+		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName, b.headImageUrl FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
+		$resultArray = array_map('result_map_string_to_int',$query->result_array());
+		return new ResponseModel($resultArray,'成功',0);
 	}
+
+
 }
  ?>
