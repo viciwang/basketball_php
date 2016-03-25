@@ -135,6 +135,39 @@ class UserModel extends BB_Model
 		return new ResponseModel($user,"更新成功",0);
 	}
 
+	public function updateHeadImageUrl() 
+	{
+		$checkResult = $this->httpHeaderAuth();
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+
+		$uid = $checkResult->uid;
+
+		$file = $_FILES['image'];
+		if (!(($file['type'] == 'image/jpeg') 
+			||($file['type'] == 'image/jpg')
+			||($file['type'] == 'image/png')
+			)) {
+			return new ResponseModel(null, '文件必须是png、jpeg或jpg格式', 1);
+		}
+		elseif ($file['size'] > 1048576) {
+			return new ResponseModel(null, '图片必须小于1Mb',1);
+		}
+		elseif ($file['error']) {
+			return new ResponseModel(null, $file['error'],1);
+		}
+		$fileName = time().'.'.substr($file['type'], 6);
+		move_uploaded_file($file['tmp_name'], './headImages/'.$fileName);
+
+		//更新数据库
+		$info = array('headImageUrl' => 'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER["SERVER_PORT"].'/headImages/'.$fileName);
+		$this->db->update('User',$info,"uid = \"$uid\"");
+
+		$response = new ResponseModel($info, '成功',0);
+		return $response;
+	}
+
 	public function logout() 
 	{
 		$checkResult = $this->httpHeaderAuth();
