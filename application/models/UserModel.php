@@ -121,14 +121,15 @@ class UserModel extends BB_Model
 		}
 
 		$user = $checkResult;
+		$uid = $user->uid;
 		$userInfo = array(
 			'nickName' => $this->input->post('nickName'),
-			'headImageUrl' => $this->input->post('headImageUrl'),
+			'personalDescription' => $this->input->post('personalDescription'),
 			'city' => $this->input->post('city'),
 			);
 		$this->db->update('User',$userInfo,"uid = \"$uid\"");
 		$user->nickName = $this->input->post('nickName');
-		$user->headImageUrl = $this->input->post('headImageUrl');
+		$user->personalDescription = $this->input->post('personalDescription');
 		$user->city = $this->input->post('city');
 		unset($user->id);
 		unset($user->password);
