@@ -25,6 +25,12 @@ class User extends CI_Controller
 		echo json_encode($response);
 	}
 
+	public function resetPassword() 
+	{
+		$response = $this->userModel->resetPassword();
+		echo json_encode($response);
+	}
+
 	public function updateInfo()
 	{
 		$response = $this->userModel->updateInfo();

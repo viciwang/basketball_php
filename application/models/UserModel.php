@@ -30,7 +30,8 @@ class UserModel extends BB_Model
 		if ($codeRow == NULL || ($codeRow != NULL && $codeRow->code != $this->input->post('verifyCode'))) {
 			return new ResponseModel(null,"验证码错误",1);
 		}
-
+		//删除验证码
+		$this->db->delete('VerifyCode',"email = \"$email\"");
 		// 获取编号
 		$uidFile = fopen("application/models/CurrentUid.txt", "r") or die("Unable to open file!");
         $currentUid = fgets($uidFile);
@@ -58,6 +59,25 @@ class UserModel extends BB_Model
 
 		unset($user['password']);
 		return new ResponseModel($user,"注册成功",0);
+	}
+
+	public function resetPassword()
+	{
+		$queryResult = $this->getUserByEmail($this->input->post('email'));
+		if ($queryResult == NULL)
+		{
+			return new ResponseModel(null,"该邮箱未注册",1);
+		}
+
+		$email = $this->input->post('email');
+		$codeRow = $this->db->query("SELECT * FROM VerifyCode WHERE email = \"$email\"")->row();
+		if ($codeRow == NULL || ($codeRow != NULL && $codeRow->code != $this->input->post('verifyCode'))) {
+			return new ResponseModel(null,"验证码错误",1);
+		}
+		$this->db->delete('VerifyCode',"email = \"$email\"");
+		$info = array('password'=>$this->input->post('password'));
+		$this->db->update('User',$info,"uid = $queryResult->uid");
+		return new ResponseModel(NULL,"成功",0);
 	}
 
 	public function login()
