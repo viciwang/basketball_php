@@ -21,8 +21,8 @@ class ShareApprove {
 class ShareModel extends BB_Model
 {
 	protected $default_page_size = 20;
-	protected $default_img_rigion_prepath = 'http://localhost:8081/shareImages/rigion/rigion_';
-	protected $default_img_thu_prepath = 'http://localhost:8081/shareImages/thumbnail/thumbnail_';
+	protected $default_img_rigion_prepath = 'http://192.168.1.103:8081/shareImages/rigion/rigion_';
+	protected $default_img_thu_prepath = 'http://192.168.1.103:8081/shareImages/thumbnail/thumbnail_';
 
 	// attribute
 	public $shareId;
@@ -73,9 +73,9 @@ class ShareModel extends BB_Model
 			
 			// 判断是否为自己的分享
 			if ($info->userId == $user->uid) {
-				$infoArray['isUserShare'] = '1';
+				$infoArray['isUserShare'] = 1;
 			} else {
-				$infoArray['isUserShare'] = '0';
+				$infoArray['isUserShare'] = 0;
 			}
 			unset($infoArray['imageName']);
 			unset($infoArray['sourceIP']);
@@ -109,7 +109,7 @@ class ShareModel extends BB_Model
 	private function convertImageName($imageNameStr) 
 	{
 		if (empty($imageNameStr)) {
-			return array('rigion'=>array(),
+			return array('origin'=>array(),
 						'thumbnail'=>array());
 		}
 		$imageNames = explode(',', $imageNameStr);
@@ -121,7 +121,7 @@ class ShareModel extends BB_Model
 			$path = pathinfo($ina);
 			array_push($thumbnailArray, $this->default_img_thu_prepath.$path['filename'].'.jpg');
 		}
-		return array('rigion'=>$rigionArray,
+		return array('origin'=>$rigionArray,
 						'thumbnail'=>$thumbnailArray);
 	}
 
