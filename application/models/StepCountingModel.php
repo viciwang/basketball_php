@@ -75,9 +75,16 @@ class StepCountingModel extends BB_Model
 			return $checkResult;
 		}
 		$uid = $checkResult->uid;
-		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName, b.headImageUrl FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
+		$query = $this->db->query("SELECT a.uid , a.stepCount, b.nickName, b.headImageUrl,b.personalDescription FROM StepCountDailyList a INNER JOIN User b ON a.uid = b.uid WHERE a.date = CURDATE() ORDER BY a.stepCount DESC");
 		$resultArray = array_map('result_map_string_to_int',$query->result_array());
-		return new ResponseModel($resultArray,'成功',0);
+		$myRank;
+		foreach ($resultArray as $key => $value) {
+			$resultArray[$key]['rank'] = $key + 1;
+			if(strcmp($resultArray[$key]['uid'],$uid) == 0) {
+				$myRank = $resultArray[$key];
+			}
+		}
+		return new ResponseModel(array('myRank'=>$myRank,'ranks'=>$resultArray),'成功',0);
 	}
 
 
