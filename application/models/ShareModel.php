@@ -38,7 +38,7 @@ class ShareModel extends BB_Model
 
 	// func
 	public function deleteAllRows() {
-		$this->db->empty_table('Share');
+		$this->db->empty_table('ShareComment');
 	}
 	public function insertShareEntity($entity) {
 		if ($this->db->insert('Share',$entity) == false) {
@@ -132,8 +132,8 @@ class ShareModel extends BB_Model
 		if ($shareInfo == NULL) {
 			return new ResponseModel(null,"评论不存在",0);
 		}
-		if (mb_strlen($comment->content,'utf8')>200 || mb_strlen($comment->content,'utf8')<20) {
-			return new ResponseModel(null,"评论长度必须大于20个字，小于200个字",0);
+		if (mb_strlen($comment->content,'utf8')>200 || mb_strlen($comment->content,'utf8')<1) {
+			return new ResponseModel(null,"评论长度必须大于1个字，小于200个字",0);
 		}
 		if(intval($comment->isReply) == 1) 
 		{
@@ -166,7 +166,21 @@ class ShareModel extends BB_Model
 		$this->db->limit($pageSize,$pageIdx*$pageSize);
 		$this->db->where("shareId = \"$shareId\"");
 		$query = $this->db->get('ShareComment');
-		return $query->result();
+
+		$resultArray = array();
+		foreach ($query->result() as $info) {
+			$infoArray = json_decode(json_encode($info),true);
+			$userInfo = $this->getUserByUid($infoArray['userId']);
+			if ($userInfo == NULL) {
+				$infoArray['headImageUrl'] = ' ';
+				$infoArray['nickName'] = '用户不存在';
+			} else {
+				$infoArray['headImageUrl'] = $userInfo->headImageUrl;
+				$infoArray['nickName'] = $userInfo->nickName;
+			}
+			array_push($resultArray, $infoArray);
+		}
+		return $resultArray;
 	}
 	public function getApprove($shareId, $userId) {
 		

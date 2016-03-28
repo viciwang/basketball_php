@@ -40,7 +40,7 @@ class ShareManager extends CI_Controller
 			//save rigion image
 			move_uploaded_file($img['tmp_name'], $rigionPath);
 			// build thumbnail
-			if ($imgFac->resizeImage($rigionPath, $thumbnailPath, 1, 100, 100) == FALSE) {
+			if ($imgFac->resizeImage($rigionPath, $thumbnailPath, 1, 200, 200) == FALSE) {
 				return new ResponseModel(null, '图片缩放出错', 0);
 			}
 			array_push($imgNames, "$imgSeq.".substr($img['type'], 6));
@@ -171,6 +171,11 @@ class ShareManager extends CI_Controller
 		$comment->content = $this->input->post('content');
 		$comment->isReply = intval($this->input->post('isReply'));
 		$comment->replyUserId = $this->input->post('replyUserId');
+		$comment->replyUserName = $this->input->post('replyUserName');
+		if ($comment->isReply == 0) {
+			$comment->replyUserId = "无";
+			$comment->replyUserName = "无";
+		}
 		$comment->sourceIP = $_SERVER['REMOTE_ADDR'];
 
 		// 3. insert
@@ -185,6 +190,8 @@ class ShareManager extends CI_Controller
 	}
 	public function getComment()
 	{
+		// $this->shareModel->deleteAllRows();
+		// return;
 		$pageIdx = intval($this->input->get('pageIdx'));
 		$pageSize = intval($this->input->get('pageSize')?:20);
 		$shareId = $this->input->get('shareId');
@@ -229,7 +236,7 @@ class ShareManager extends CI_Controller
 		}
 
 		$approve = new ShareApprove();
-		$approve->shareId = $this->input->get('shareId');
+		$approve->shareId = $this->input->post('shareId');
 		$approve->userId = $check_result->uid;
 
 		$result = $this->shareModel->deleteApprove($approve);
