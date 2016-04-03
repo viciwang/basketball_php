@@ -21,8 +21,8 @@ class ShareApprove {
 class ShareModel extends BB_Model
 {
 	protected $default_page_size = 20;
-	protected $default_img_rigion_prepath = 'http://localhost:8081/shareImages/rigion/rigion_';
-	protected $default_img_thu_prepath = 'http://localhost:8081/shareImages/thumbnail/thumbnail_';
+	protected $default_img_rigion_prepath = 'http://192.168.1.103:8081/shareImages/rigion/rigion_';
+	protected $default_img_thu_prepath = 'http://192.168.1.103:8081/shareImages/thumbnail/thumbnail_';
 
 	// attribute
 	public $shareId;
@@ -38,7 +38,7 @@ class ShareModel extends BB_Model
 
 	// func
 	public function deleteAllRows() {
-		$this->db->empty_table('Share');
+		$this->db->empty_table('ShareComment');
 	}
 	public function insertShareEntity($entity) {
 		if ($this->db->insert('Share',$entity) == false) {
@@ -73,9 +73,9 @@ class ShareModel extends BB_Model
 			
 			// 判断是否为自己的分享
 			if ($info->userId == $user->uid) {
-				$infoArray['isUserShare'] = '1';
+				$infoArray['isUserShare'] = 1;
 			} else {
-				$infoArray['isUserShare'] = '0';
+				$infoArray['isUserShare'] = 0;
 			}
 			unset($infoArray['imageName']);
 			unset($infoArray['sourceIP']);
@@ -109,7 +109,7 @@ class ShareModel extends BB_Model
 	private function convertImageName($imageNameStr) 
 	{
 		if (empty($imageNameStr)) {
-			return array('rigion'=>array(),
+			return array('origin'=>array(),
 						'thumbnail'=>array());
 		}
 		$imageNames = explode(',', $imageNameStr);
@@ -121,7 +121,7 @@ class ShareModel extends BB_Model
 			$path = pathinfo($ina);
 			array_push($thumbnailArray, $this->default_img_thu_prepath.$path['filename'].'.jpg');
 		}
-		return array('rigion'=>$rigionArray,
+		return array('origin'=>$rigionArray,
 						'thumbnail'=>$thumbnailArray);
 	}
 
@@ -132,8 +132,8 @@ class ShareModel extends BB_Model
 		if ($shareInfo == NULL) {
 			return new ResponseModel(null,"评论不存在",0);
 		}
-		if (mb_strlen($comment->content,'utf8')>200 || mb_strlen($comment->content,'utf8')<20) {
-			return new ResponseModel(null,"评论长度必须大于20个字，小于200个字",0);
+		if (mb_strlen($comment->content,'utf8')>200 || mb_strlen($comment->content,'utf8')<1) {
+			return new ResponseModel(null,"评论长度必须大于1个字，小于200个字",0);
 		}
 		if(intval($comment->isReply) == 1) 
 		{
@@ -166,7 +166,21 @@ class ShareModel extends BB_Model
 		$this->db->limit($pageSize,$pageIdx*$pageSize);
 		$this->db->where("shareId = \"$shareId\"");
 		$query = $this->db->get('ShareComment');
-		return $query->result();
+
+		$resultArray = array();
+		foreach ($query->result() as $info) {
+			$infoArray = json_decode(json_encode($info),true);
+			$userInfo = $this->getUserByUid($infoArray['userId']);
+			if ($userInfo == NULL) {
+				$infoArray['headImageUrl'] = ' ';
+				$infoArray['nickName'] = '用户不存在';
+			} else {
+				$infoArray['headImageUrl'] = $userInfo->headImageUrl;
+				$infoArray['nickName'] = $userInfo->nickName;
+			}
+			array_push($resultArray, $infoArray);
+		}
+		return $resultArray;
 	}
 	public function getApprove($shareId, $userId) {
 		
