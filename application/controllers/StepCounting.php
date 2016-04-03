@@ -34,5 +34,11 @@ class StepCounting extends CI_Controller
 		$data = $this->stepCountingModel->getRanking();
 		echo json_encode($data);
 	}
+
+	public function uploadStepData()
+	{
+		$data = $this->stepCountingModel->uploadStepData();
+		echo json_encode($data);
+	}
 }
  ?>

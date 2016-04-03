@@ -50,22 +50,27 @@ class StepCountingModel extends BB_Model
 			return $checkResult;
 		}
 		$uid = $checkResult->uid;
-		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid ORDER BY date DESC");
+		$date = $this->input->post("date");
+		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid AND date >= \"$date\" ORDER BY date DESC");
+
 		$resultArray = $query->result_array();
 		$mapArray = array_map('result_map_string_to_int', $resultArray);
-		$retrunArray = array();
+		$retrurnArray = array();
 		$temArray = array();
-
+		$currentRecord;
 		// 按月份分类
 		for ($index=0; $index < count($mapArray); $index++) { 
 			$currentRecord = $mapArray[$index];
 			array_push($temArray, $currentRecord);
 			if (strcmp(substr($currentRecord['date'], 8),'01') == 0) {
-				array_push($retrunArray, array('month'=>substr($currentRecord['date'], 0, 7),'dayRecords'=>$temArray));
+				array_push($retrurnArray, array('month'=>substr($currentRecord['date'], 0, 7),'dayRecords'=>$temArray));
 				$temArray = array();
 			}
 		}
-		return new ResponseModel($retrunArray,'成功',0);
+		if(!empty($temArray)) {
+			array_push($retrurnArray, array('month'=>substr($currentRecord['date'], 0, 7),'dayRecords'=>$temArray));
+		}
+		return new ResponseModel($retrurnArray,'成功',0);
 	}
 
 	public function getRanking()
@@ -87,6 +92,32 @@ class StepCountingModel extends BB_Model
 		return new ResponseModel(array('myRank'=>$myRank,'ranks'=>$resultArray),'成功',0);
 	}
 
+	public function uploadStepData()
+	{
+		$checkResult = $this->httpHeaderAuth();
+		if (get_class($checkResult) === 'ResponseModel') {
+			return $checkResult;
+		}
+		$uid = $checkResult->uid;
+		$stepCount = $this->input->post('stepCount');
+		$startTime = $this->input->post('startTime');
 
+		$result = $this->db->query("SELECT * FROM StepCounting WHERE uid = $uid AND startTime = \"$startTime\"");
+		$query;
+		if ($result->row() == NULL) {
+			$a = array('uid'=>$uid,'stepCount'=>$stepCount,'startTime'=>$startTime);
+			$query = $this->db->insert('StepCounting',$a);
+		}
+		else {
+			$a = array('stepCount'=>$this->input->post("stepCount"));
+			$query = $this->db->update('StepCounting',$a,"uid = $uid AND startTime = \"$startTime\"");
+		}
+		if ($query === FALSE) {
+			return new ResponseModel(NULL,'数据上传失败',1);
+		}
+		else {
+			return new ResponseModel(NULL,'OK',0);
+		}
+	}
 }
  ?>
