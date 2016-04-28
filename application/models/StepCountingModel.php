@@ -51,7 +51,7 @@ class StepCountingModel extends BB_Model
 		}
 		$uid = $checkResult->uid;
 		$date = $this->input->post("date");
-		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid AND date >= \"$date\" ORDER BY date DESC");
+		$query = $this->db->query("SELECT date , stepCount FROM StepCountDailyList WHERE uid = $uid AND date > \"$date\" ORDER BY date DESC");
 
 		$resultArray = $query->result_array();
 		$mapArray = array_map('result_map_string_to_int', $resultArray);
